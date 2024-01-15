@@ -2,6 +2,13 @@
     "files.associations": {
         "memory.h": "c",
         "simple.h": "c",
-        "memory.h": "c"
+        "common.h": "c",
+        "math.h": "c",
+        "compressionbuffer.h": "c",
+        "levels.h": "c",
+        "Polygun64_Settings.C": "cpp",
+        "mansion_Settings.C": "cpp",
+        "audio.h": "c",
+        "bobomb_Settings.C": "cpp"
     }
 }

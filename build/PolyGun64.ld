@@ -14,6 +14,8 @@ SECTIONS
       build/src/main*.o(.text);
       */libultra_d.a:*.o(.text);
       */libgcc.a:*.o(.text);
+      build/asm/mathtables.o(.data);
+      build/asm/compression.o(.text);
       /usr/lib/n64/PR/rspboot.o(.text);
       /usr/lib/n64/PR/gspF3DEX2.fifo.o(.text);
       /usr/lib/n64/PR/aspMain.o(.text);
@@ -56,12 +58,22 @@ SECTIONS
       build/assets/sound_data.o(.data);
    }
    _sound_dataSegmentEnd = ALIGN(ADDR(.sound_data) + SIZEOF(.sound_data),0x10); _sound_dataSegmentRomEnd = _sound_dataSegmentEnd - _sound_dataSegmentStart + _sound_dataSegmentRomStart; __romPos = _sound_dataSegmentRomEnd; . = _sound_dataSegmentEnd;
+   _level_dataSegmentStart = ADDR(.level_data); _level_dataSegmentRomStart = __romPos; .level_data __romPos : AT(__romPos)
+   {
+      build/assets/level_data.o(.data);
+   }
+   _level_dataSegmentEnd = ALIGN(ADDR(.level_data) + SIZEOF(.level_data),0x10); _level_dataSegmentRomEnd = _level_dataSegmentEnd - _level_dataSegmentStart + _level_dataSegmentRomStart; __romPos = _level_dataSegmentRomEnd; . = _level_dataSegmentEnd;
    . = 0x80200000;
    _zbufferSegmentBssStart = ADDR(.zbuffer.noload); .zbuffer.noload (NOLOAD) :
    {
       build/src/buffers/gfxzbuffer.o(.bss*);
    }
    _zbufferSegmentBssEnd = ALIGN(ADDR(.zbuffer.noload) + SIZEOF(.zbuffer.noload),0x10); _zbufferSegmentBssSize = _zbufferSegmentBssEnd - _zbufferSegmentBssStart; . = _zbufferSegmentBssEnd;
+   . = 0x80400000;
+   _rawbufferSegmentBssStart = ADDR(.rawbuffer.noload); .rawbuffer.noload (NOLOAD) :
+   {
+      build/src/buffers/compressionbuffer.o(.bss*);
+   }
    . = 0x80600000;
    _cfbSegmentBssStart = ADDR(.cfb.noload); .cfb.noload (NOLOAD) :
    {

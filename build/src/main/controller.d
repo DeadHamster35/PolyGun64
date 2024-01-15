@@ -25,4 +25,6 @@ build/src/main/controller.o: src/main/controller.c \
  /usr/include/n64/PR/libaudio.h /usr/include/n64/PR/gu.h \
  /usr/include/n64/PR/ramrom.h /usr/include/n64/PR/sp.h \
  /usr/include/n64/PR/ucode.h /usr/include/n64/PR/ultraerror.h \
- /usr/include/n64/PR/ultralog.h include/simple.h include/gfx.h
+ /usr/include/n64/PR/ultralog.h include/simple.h include/common.h \
+ include/gfx.h include/levels.h src/main/audio.h \
+ /usr/include/n64/PR/libaudio.h

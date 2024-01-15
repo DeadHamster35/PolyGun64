@@ -28,9 +28,9 @@
 /*
  * Remember, viewport structures have 2 bits of fraction in them.
  */
-static Vp vp = {
+static Vp LevelViewport = {
     480*2, 320*2, G_MAXZ/2, 0,	/* scale */
-    SCREEN_WD*2, SCREEN_HT*2, G_MAXZ/2, 0,	/* translate */
+    512*2, 336*2, G_MAXZ/2, 0,	/* translate */
 };
 
 /*
@@ -56,7 +56,7 @@ Gfx rdpstateinit_dl[] = {
     gsDPSetCombineMode(G_CC_SHADE, G_CC_SHADE),
 
     /* initialize the scissor box */
-    gsDPSetScissor(G_SC_NON_INTERLACE, 80, 80, 560, 400),
+    gsDPSetScissor(G_SC_NON_INTERLACE, 15, 15, 495, 320),
 
     /* initialize all the texture tile descriptors to zero */
     gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -108,7 +108,7 @@ Gfx setup_rdpstate[] = {
 
 /* intialize the RSP state: */
 Gfx setup_rspstate[] = {
-    gsSPViewport(&vp),
+    gsSPViewport(&LevelViewport),
     gsSPClearGeometryMode((G_ZBUFFER | G_SHADE | G_SHADING_SMOOTH | 
 			   G_CULL_BOTH | G_FOG | G_LIGHTING)),
     gsSPSetGeometryMode(G_ZBUFFER | G_SHADE | G_SHADING_SMOOTH | G_CULL_BACK),

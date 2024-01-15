@@ -3,9 +3,15 @@
 #include "gfx.h"
 #include "common.h"
 #include "simple.h"
+#include "compressionbuffer.h"
 
 
 uint SegmentTable[16];
+
+uint RawBufferPointer;
+
+
+extern void slidec1(unsigned char * Source,unsigned char * Target);
 
 void SetSegment(uint SegmentID, uint RAMAddress)
 {
@@ -27,3 +33,16 @@ void StoreRSPSegments()
     }
 }
 
+uint DecompressData(uint Source, uint CompressionLength)
+{
+    uint LoadAddress = RawBufferPointer;
+
+    LoadDMA((char*)Source, (char*)&CompressionBuffer, CompressionLength);
+
+    slidec1((char*)&CompressionBuffer, (char*)LoadAddress);
+
+    uint Size = *(uint*)(((uint)&CompressionBuffer) + 4);
+    RawBufferPointer += Align32(Size);
+
+    return LoadAddress;
+}

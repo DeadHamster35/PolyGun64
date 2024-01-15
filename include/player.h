@@ -9,6 +9,8 @@ extern Player GamePlayers[4];
 extern void initPlayers();
 extern void initAllPlayers();
 extern void UpdatePlayerControls();
+extern void UpdateMenuControls();
 
 #endif
+
 

@@ -26,4 +26,5 @@ build/src/main/collision.o: src/main/collision.c \
  /usr/include/n64/PR/ucode.h /usr/include/n64/PR/ultraerror.h \
  /usr/include/n64/PR/ultralog.h /usr/include/n64/PR/ultralog.h \
  /usr/include/n64/PR/sched.h include/math.h include/common.h \
- include/simple.h include/gfx.h include/common.h include/memory.h
+ include/simple.h include/gfx.h include/player.h include/common.h \
+ include/memory.h

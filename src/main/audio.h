@@ -70,6 +70,10 @@ typedef struct {
 } amConfig;
 
 
+
+
+extern void StopMusic();
+extern void StartMusic();
 void    amCreateAudioMgr(ALSynConfig *c, OSPri priority, amConfig *amc);
 
 extern u64        audYieldBuf[];

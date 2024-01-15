@@ -26,4 +26,4 @@ build/src/main/audio.o: src/main/audio.c /usr/include/n64/PR/ultralog.h \
  /usr/include/n64/PR/sp.h /usr/include/n64/PR/ucode.h \
  /usr/include/n64/PR/ultraerror.h /usr/include/n64/PR/ultralog.h \
  /usr/include/n64/PR/libaudio.h /usr/include/n64/PR/sched.h \
- include/simple.h include/gfx.h
+ include/simple.h include/common.h include/gfx.h

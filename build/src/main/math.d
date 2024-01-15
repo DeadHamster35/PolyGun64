@@ -25,4 +25,4 @@ build/src/main/math.o: src/main/math.c /usr/include/n64/ultra64.h \
  /usr/include/n64/PR/sp.h /usr/include/n64/PR/ucode.h \
  /usr/include/n64/PR/ultraerror.h /usr/include/n64/PR/ultralog.h \
  include/gfx.h /usr/include/n64/PR/sched.h include/common.h \
- include/simple.h include/gfx.h include/math.h include/common.h
+ include/simple.h include/common.h include/gfx.h include/math.h

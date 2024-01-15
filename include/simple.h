@@ -10,6 +10,8 @@
  * simple.h
  */
 
+
+
 #ifndef __simple__
 #define __simple__
 
@@ -19,7 +21,7 @@
 #define	DYNAMIC_SEGMENT		2
 
 #ifdef _LANGUAGE_C
-
+#include "common.h"
 #include <ultra64.h>
 #include "gfx.h"
 
@@ -29,6 +31,7 @@
 
 #define UTIL_PRIORITY		1
 #define INIT_PRIORITY		10
+#define RENDER_PRIORITY         9
 #define GAME_PRIORITY		10
 #define AUDIO_PRIORITY		12
 #define SCHEDULER_PRIORITY	13
@@ -52,6 +55,8 @@ extern OSMesgQueue      gfxFrameMsgQ;
 extern OSMesg           gfxFrameMsgBuf[MAX_MESGS];
 extern OSPiHandle	*handler;
 
+extern short GameSequence;
+
 extern char _gfxdlistsSegmentBssStart[], _gfxdlistsSegmentBssEnd[];
 extern char _staticSegmentRomStart[], _staticSegmentRomEnd[];
 extern char _tableSegmentRomStart[], _tableSegmentRomEnd[];
@@ -59,6 +64,8 @@ extern char _seqSegmentRomStart[], _seqSegmentRomEnd[];
 extern char _bankSegmentRomStart[], _bankSegmentRomEnd[];
 
 extern void LoadDMA(const char *src, const char *dest, const int len);
+
+extern ushort RenderEnable, RenderProcessing;
 
 void     initAudio(void);
 void     initGFX(void);

@@ -88,7 +88,7 @@ extern Gfx	setup_rdpstate[];
 extern Gfx	setup_rspstate[];
 extern Gfx 	logo_dl[];
 extern Gfx 	bg_dl[];
-
+extern Gfx 	menubg_dl[];
 /* global pointer for display list: */
 extern Gfx	*glistp;
 

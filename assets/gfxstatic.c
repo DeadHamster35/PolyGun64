@@ -54,10 +54,10 @@ Gfx logo_dl[] = {
  * The background is two big triangles.
  */
 static Vtx bg_vtx[4] =  {
-        {        -320,  0, 320, 0, 0, 0, 0, 0, 0xff, 0xff		},
-        {         320,  0, 320, 0, 0, 0, 0, 0, 0xff, 0xff		},
-        {         320,  0, -320, 0, 0, 0, 0, 0, 0x10, 0xff		},
-        {        -320,  0, -320, 0, 0, 0, 0, 0, 0x10, 0xff		},
+        {        -640,  10,   640, 0, 0, 0, 0, 0, 0xff, 0xff		},
+        {         640,  10,   640, 0, 0, 0, 0, 0, 0xff, 0xff		},
+        {         640,  10,  -640, 0, 0, 0, 0, 0, 0x10, 0xff		},
+        {        -640,  10,  -640, 0, 0, 0, 0, 0, 0x10, 0xff		},
 };
 
 Gfx bg_dl[] = {
@@ -72,5 +72,24 @@ Gfx bg_dl[] = {
     gsSPEndDisplayList(),
 };
 
+
+static Vtx menubg_vtx[4] =  {
+        {        -640,  10,   640, 0, 0, 0, 0x35, 0x35, 0x35, 0xff		},
+        {         640,  10,   640, 0, 0, 0, 0x35, 0x35, 0x35, 0xff		},
+        {         640,  10,  -640, 0, 0, 0, 0x35, 0x35, 0x35, 0xff		},
+        {        -640,  10,  -640, 0, 0, 0, 0x35, 0x35, 0x35, 0xff		},
+};
+
+Gfx menubg_dl[] = {
+    gsDPPipeSync(),
+    gsSPClearGeometryMode(G_ZBUFFER),
+    gsSPSetGeometryMode(G_SHADE),
+    gsDPSetCombineMode (G_CC_SHADE, G_CC_SHADE),
+    gsDPSetColorDither(G_CD_BAYER),	/* HW 1.0 should use 'G_CD_ENABLE' */
+    gsSPVertex(&menubg_vtx, 4, 0),
+    gsSP2Triangles(0, 2, 1, 0, 0, 3, 2, 0),
+    gsSP2Triangles(0, 1, 2, 0, 0, 2, 3, 0),
+    gsSPEndDisplayList(),
+};
 
 

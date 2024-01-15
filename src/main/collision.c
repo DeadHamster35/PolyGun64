@@ -4,13 +4,11 @@
 #include <stdbool.h>
 #include "math.h"
 #include "simple.h"
-//#include "player.h"
+#include "player.h"
 #include "common.h"
 #include "memory.h"
 
 
-
-#ifdef Collision
 CollisionTri CollisionBuffer[MAXTRI];
 uint CollisionCount;
 
@@ -76,7 +74,7 @@ void Save1Triangle(F3DCode* OpCode)
     {
         for (int ThisVector = 0; ThisVector < 3; ThisVector++)
         {
-            CollisionBuffer[CollisionCount].Geometry.Vertex[ThisVert][ThisVector] = VertexCache[Index[ThisVert]][ThisVector];
+            CollisionBuffer[CollisionCount].Vertex[ThisVert][ThisVector] = VertexCache[Index[ThisVert]][ThisVector];
             
 
 
@@ -137,11 +135,11 @@ void Save2Triangle(F3DCode* OpCode)
         PRINTF("Triangle Vertex # %d \n", (int)ThisVert);
         for (int ThisVector = 0; ThisVector < 3; ThisVector++)
         {
-            CollisionBuffer[CollisionCount].Geometry.Vertex[ThisVert][ThisVector] = VertexCache[Index[ThisVert]][ThisVector];
+            CollisionBuffer[CollisionCount].Vertex[ThisVert][ThisVector] = VertexCache[Index[ThisVert]][ThisVector];
             
 
             
-            PRINTF("Triangle Position %d \n", (int)CollisionBuffer[CollisionCount].Geometry.Vertex[ThisVert][ThisVector]);
+            PRINTF("Triangle Position %d \n", (int)CollisionBuffer[CollisionCount].Vertex[ThisVert][ThisVector]);
 
             if (VertexCache[Index[ThisVert]][ThisVector] < CollisionBuffer[CollisionCount].BoundingMin[ThisVector])
             {
@@ -188,9 +186,9 @@ void Save2Triangle(F3DCode* OpCode)
         PRINTF("Triangle Vertex # %d \n", (int)ThisVert);
         for (int ThisVector = 0; ThisVector < 3; ThisVector++)
         {
-            CollisionBuffer[CollisionCount].Geometry.Vertex[ThisVert][ThisVector] = VertexCache[Index[ThisVert]][ThisVector];
+            CollisionBuffer[CollisionCount].Vertex[ThisVert][ThisVector] = VertexCache[Index[ThisVert]][ThisVector];
             
-            PRINTF("Triangle Position %d \n", (int)CollisionBuffer[CollisionCount].Geometry.Vertex[ThisVert][ThisVector]);
+            PRINTF("Triangle Position %d \n", (int)CollisionBuffer[CollisionCount].Vertex[ThisVert][ThisVector]);
 
             if (VertexCache[Index[ThisVert]][ThisVector] < CollisionBuffer[CollisionCount].BoundingMin[ThisVector])
             {
@@ -218,9 +216,10 @@ void BuildCollisionBuffer(uint Address)
 {   
     CollisionCount = 0;
     uint LocalCode;
+    uint RealAddress = GetRealAddress(Address);
     while(1)
     {
-        CollisionEntry* CEntry = (CollisionEntry*)Address;
+        CollisionEntry* CEntry = (CollisionEntry*)RealAddress;
 
         if (CEntry->F3DAddress == 0)
         {
@@ -264,7 +263,7 @@ void BuildCollisionBuffer(uint Address)
 
         }
 
-        Address += 8;
+        RealAddress += 8;
 
 
     };
@@ -277,7 +276,7 @@ void SaveNormal()
     
 
 
-    Triangle* LocalTriangle = (Triangle*)&CollisionBuffer[CollisionCount].Geometry;
+    CollisionTri* LocalTriangle = (CollisionTri*)&CollisionBuffer[CollisionCount];
     
     
     A[0] = LocalTriangle->Vertex[1][0] - LocalTriangle->Vertex[0][0];
@@ -311,15 +310,15 @@ void SaveAxis()
 {
     CollisionTri* LocalCollide = (CollisionTri*)&CollisionBuffer[CollisionCount];
 
-    A[0] = LocalCollide->Geometry.Normal[0] * LocalCollide->Geometry.Normal[0];
-    A[1] = LocalCollide->Geometry.Normal[1] * LocalCollide->Geometry.Normal[1];
-    A[2] = LocalCollide->Geometry.Normal[2] * LocalCollide->Geometry.Normal[2];
+    A[0] = LocalCollide->Normal[0] * LocalCollide->Normal[0];
+    A[1] = LocalCollide->Normal[1] * LocalCollide->Normal[1];
+    A[2] = LocalCollide->Normal[2] * LocalCollide->Normal[2];
 
     if (A[0] > A[1])
     {
         if (A[0] > A[2])
         {
-            LocalCollide->NormalVector = XAXISVECTOR;
+            LocalCollide->NormalDirection = XAXISVECTOR;
             return;
         }
     }
@@ -328,7 +327,7 @@ void SaveAxis()
     {
         if (A[1] > A[2])
         {
-            LocalCollide->NormalVector = YAXISVECTOR;
+            LocalCollide->NormalDirection = YAXISVECTOR;
             return;
         }
     }
@@ -337,19 +336,19 @@ void SaveAxis()
     {
         if (A[2] > A[1])
         {
-            LocalCollide->NormalVector = ZAXISVECTOR;
+            LocalCollide->NormalDirection = ZAXISVECTOR;
             return;
         }
     }
     //lol wtf
 
-    LocalCollide->NormalVector = WTFAXISVECTOR;
+    LocalCollide->NormalDirection = WTFAXISVECTOR;
 }
 
 
 int CheckXZ(Sphere Player, ushort ThisTri)
 {
-    Triangle* Target = (Triangle*)(&CollisionBuffer[ThisTri].Geometry);
+    CollisionTri* Target = (CollisionTri*)(&CollisionBuffer[ThisTri]);
 
     short HitResult;
     //gaiseki1=(p2z-p1z)*(p3x-p1x)-(p2x-p1x)*(p3z-p1z);
@@ -428,7 +427,7 @@ int CheckXZ(Sphere Player, ushort ThisTri)
 
 int CheckXY(Sphere Player, ushort ThisTri)
 {
-    Triangle* Target = (Triangle*)(&CollisionBuffer[ThisTri].Geometry);
+    CollisionTri* Target = (CollisionTri*)(&CollisionBuffer[ThisTri]);
 
     short HitResult;
     Vector Product;
@@ -504,7 +503,7 @@ int CheckXY(Sphere Player, ushort ThisTri)
 
 int CheckYZ(Sphere Player, ushort ThisTri)
 {
-    Triangle* Target = (Triangle*)(&CollisionBuffer[ThisTri].Geometry);
+    CollisionTri* Target = (CollisionTri*)(&CollisionBuffer[ThisTri]);
 
     short HitResult;
     
@@ -580,9 +579,9 @@ int CheckYZ(Sphere Player, ushort ThisTri)
 void CollisionCheck(int Index)
 {
     Sphere CamSphere;
-    CamSphere.Center[0] = GameCamera[Index].Position[0];
-    CamSphere.Center[1] = GameCamera[Index].Position[1];
-    CamSphere.Center[2] = GameCamera[Index].Position[2];
+    CamSphere.Center[0] = GamePlayers[Index].Camera.Location.Position[0];
+    CamSphere.Center[1] = GamePlayers[Index].Camera.Location.Position[1];
+    CamSphere.Center[2] = GamePlayers[Index].Camera.Location.Position[2];
     CamSphere.Radius = 3.0f;
 
     for (int ThisTri = 0; ThisTri < CollisionCount; ThisTri++)
@@ -600,7 +599,7 @@ void CollisionCheck(int Index)
         }
         
         int HitResult = -1;
-        switch (CollisionBuffer[ThisTri].NormalVector)
+        switch (CollisionBuffer[ThisTri].NormalDirection)
         {
             case XAXISVECTOR:
             {
@@ -620,18 +619,18 @@ void CollisionCheck(int Index)
         }
         if (HitResult > 0)
         {
-            GameCamera[Index].Position[0] -= CollisionBuffer[ThisTri].Geometry.Normal[0] * CamSphere.Radius;
-            GameCamera[Index].Position[1] -= CollisionBuffer[ThisTri].Geometry.Normal[1] * CamSphere.Radius;
-            GameCamera[Index].Position[2] -= CollisionBuffer[ThisTri].Geometry.Normal[2] * CamSphere.Radius;
+            GamePlayers[Index].Location.Position[0] -= CollisionBuffer[ThisTri].Normal[0] * CamSphere.Radius;
+            GamePlayers[Index].Location.Position[1] -= CollisionBuffer[ThisTri].Normal[1] * CamSphere.Radius;
+            GamePlayers[Index].Location.Position[2] -= CollisionBuffer[ThisTri].Normal[2] * CamSphere.Radius;
             PRINTF("Collision %d \n",ThisTri);
-            PRINTF("Player X %d \n", (int)GamePlayer[0].Position[0]);
-            PRINTF("Player Y %d \n", (int)GamePlayer[0].Position[1]);
-            PRINTF("Player Z %d \n", (int)GamePlayer[0].Position[2]);
+            PRINTF("Player X %d \n", (int)GamePlayers[0].Location.Position[0]);
+            PRINTF("Player Y %d \n", (int)GamePlayers[0].Location.Position[1]);
+            PRINTF("Player Z %d \n", (int)GamePlayers[0].Location.Position[2]);
             for (int ThisVert = 0; ThisVert < 3; ThisVert++)
             {
-                PRINTF("Triangle V0 X %d \n", (int)CollisionBuffer[ThisTri].Geometry.Vertex[ThisVert][0]);
-                PRINTF("Triangle V0 Y %d \n", (int)CollisionBuffer[ThisTri].Geometry.Vertex[ThisVert][1]);
-                PRINTF("Triangle V0 Z %d \n", (int)CollisionBuffer[ThisTri].Geometry.Vertex[ThisVert][2]);
+                PRINTF("Triangle V0 X %d \n", (int)CollisionBuffer[ThisTri].Vertex[ThisVert][0]);
+                PRINTF("Triangle V0 Y %d \n", (int)CollisionBuffer[ThisTri].Vertex[ThisVert][1]);
+                PRINTF("Triangle V0 Z %d \n", (int)CollisionBuffer[ThisTri].Vertex[ThisVert][2]);
             }
         }
 
@@ -639,4 +638,3 @@ void CollisionCheck(int Index)
     }
     
 }
-#endif

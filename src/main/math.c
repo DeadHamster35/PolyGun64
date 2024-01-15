@@ -4,6 +4,17 @@
 #include "common.h"
 #include "simple.h"
 #include "math.h"
+extern float sintable[];
+extern float costable[];
+
+float sint(ushort angle)
+{
+	return(sintable[angle>>4]);
+}
+float cost(ushort angle)
+{
+	return(costable[angle>>4]);
+}
 
 
 extern void TransformMatrix(AffineMtx InputMatrix, Vector Position, Vector Look, Vector Up)
@@ -64,4 +75,47 @@ extern void TransformMatrix(AffineMtx InputMatrix, Vector Position, Vector Look,
     InputMatrix[1][3] = 0.0f;
     InputMatrix[2][3] = 0.0f;
     InputMatrix[3][3] = 1.0f;
+}
+
+void AlignZVector(Vector vect, short RotZ)
+{
+    float sine = sint(RotZ);
+    float cosine = cost(RotZ);
+    float v0 = vect[0];
+    float v1 = vect[1];
+    float v2 = vect[2];
+
+    // Rotate around Z-axis (assuming Z-up)
+    vect[0] = cosine * v0 - sine * v1;
+    vect[1] = sine * v0 + cosine * v1;
+    vect[2] = v2;
+}
+
+
+void AlignXVector(Vector vect, short RotX)
+{
+    float sine = sint(RotX);
+    float cosine = cost(RotX);
+    float v0 = vect[0];
+    float v1 = vect[1];
+    float v2 = vect[2];
+
+    // Rotate around X-axis (assuming Z-up)
+    vect[1] = cosine * v1 - sine * v2;
+    vect[2] = sine * v1 + cosine * v2;
+    vect[0] = v0;
+}
+
+void AlignYVector(Vector vect, short RotY)
+{
+    float sine = sint(RotY);
+    float cosine = cost(RotY);
+    float v0 = vect[0];
+    float v1 = vect[1];
+    float v2 = vect[2];
+
+    // Rotate around Y-axis (assuming Z-up)
+    vect[0] = cosine * v0 + sine * v2;
+    vect[2] = -sine * v0 + cosine * v2;
+    vect[1] = v1;
 }

@@ -53,12 +53,12 @@ static ALSeqMarker seqEnd;
 
 ALHeap             hp;
 
+ALBankFile    *bankPtr;
+
 void initAudio(void) 
 {
-    ALBankFile    *bankPtr;
     u32           bankLen;
     ALSynConfig   c;
-    ALSeqpConfig  seqc;
     amConfig      amc;
     
     alHeapInit(&hp, audioHeap, sizeof(audioHeap));    
@@ -100,7 +100,17 @@ void initAudio(void)
     amc.maxACMDSize = MAX_RSP_CMDS;
  
     amCreateAudioMgr(&c, AUDIO_PRIORITY, &amc);
+}
+
+void StartMusic()
+{    
     
+    ALSeqpConfig  seqc;
+    
+        
+    #ifdef DEBUG
+        seqc.debugFlags     = NO_VOICE_ERR_MASK |NOTE_OFF_ERR_MASK | NO_SOUND_ERR_MASK;
+    #endif
     /*
      * Create the sequence and the sequence player
      */
@@ -111,9 +121,7 @@ void initAudio(void)
     seqc.initOsc        = 0;
     seqc.updateOsc      = 0;
     seqc.stopOsc        = 0;
-#ifdef DEBUG
-    seqc.debugFlags     = NO_VOICE_ERR_MASK |NOTE_OFF_ERR_MASK | NO_SOUND_ERR_MASK;
-#endif
+
     seqp = alHeapAlloc(&hp, 1, sizeof(ALSeqPlayer));
     alSeqpNew(seqp, &seqc);
 
@@ -126,5 +134,12 @@ void initAudio(void)
     alSeqpSetSeq(seqp, seq);
     alSeqpSetBank(seqp, bankPtr->bankArray[0]);
     alSeqpPlay(seqp);
+}
+
+
+void StopMusic()
+{    
+    seqp = alHeapAlloc(&hp, 1, sizeof(ALSeqPlayer));
+    alSeqpStop(seqp);
 }
 

@@ -42,6 +42,8 @@ SECTIONS
 
       */libultra_d.a:*.o(.text);
       */libgcc.a:*.o(.text);
+      BUILD_DIR/asm/mathtables.o(.data);
+      BUILD_DIR/asm/compression.o(.text);
       /usr/lib/n64/PR/rspboot.o(.text);
       /usr/lib/n64/PR/gspF3DEX2.fifo.o(.text);
       /usr/lib/n64/PR/aspMain.o(.text);
@@ -96,6 +98,13 @@ SECTIONS
    }
    END_SEG(sound_data)
 
+
+   BEGIN_SEG(level_data, __romPos)
+   {
+      BUILD_DIR/assets/level_data.o(.data);
+   }
+   END_SEG(level_data)
+
    
    
    . = 0x80200000;
@@ -105,6 +114,12 @@ SECTIONS
       BUILD_DIR/src/buffers/gfxzbuffer.o(.bss*);
    }
    END_NOLOAD(zbuffer)
+
+   . = 0x80400000;
+   BEGIN_NOLOAD(rawbuffer)
+   {
+      BUILD_DIR/src/buffers/compressionbuffer.o(.bss*);
+   }
 
    . = 0x80600000;
    

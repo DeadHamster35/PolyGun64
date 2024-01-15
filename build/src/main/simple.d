@@ -24,6 +24,7 @@ build/src/main/simple.o: src/main/simple.c /usr/include/n64/ultra64.h \
  /usr/include/n64/PR/gu.h /usr/include/n64/PR/ramrom.h \
  /usr/include/n64/PR/sp.h /usr/include/n64/PR/ucode.h \
  /usr/include/n64/PR/ultraerror.h /usr/include/n64/PR/ultralog.h \
- /usr/include/n64/PR/sched.h include/simple.h include/gfx.h \
- src/main/audio.h /usr/include/n64/PR/libaudio.h include/gfx.h \
- include/memory.h include/common.h include/player.h
+ /usr/include/n64/PR/sched.h include/simple.h include/common.h \
+ include/gfx.h src/main/audio.h /usr/include/n64/PR/libaudio.h \
+ include/gfx.h include/memory.h include/player.h \
+ include/compressionbuffer.h include/levels.h

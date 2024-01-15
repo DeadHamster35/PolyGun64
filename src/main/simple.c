@@ -55,6 +55,8 @@
 #include "gfx.h"
 #include "memory.h"
 #include "player.h"
+#include "compressionbuffer.h"
+#include "levels.h"
 
 
 /**** threads used by this file ****/
@@ -93,6 +95,8 @@ OSScClient      gfxClient;
 
 /**** Controller globals ****/
 extern u8       validcontrollers;
+
+short GameSequence = MENUSEQUENCE;
 
 
 #ifndef DEBUGBARS
@@ -150,6 +154,8 @@ static void initproc(char *argv)
     for(;;);
 }
 
+
+
 /**********************************************************************
  *
  * A continual loop, primarily used for servicing the starts of graphic 
@@ -168,6 +174,8 @@ static void initproc(char *argv)
  *         want to fade or say goodbye.
  *
  **********************************************************************/
+ushort RenderEnable, RenderProcessing;
+
 static void gameproc(void *argv)
 {
     u32         drawbuffer = 0;
@@ -191,9 +199,14 @@ static void gameproc(void *argv)
                 /**** Create a new gfx task unless we already have 2  ****/                 
                 if (pendingGFX < 2) 
                 {
-                    createGfxTask(&gInfo[drawbuffer]);
-                    pendingGFX++;
-                    drawbuffer ^= 1; /* switch the drawbuffer */
+                    if (RenderEnable)
+                    {
+                        RenderProcessing = 1;
+                        createGfxTask(&gInfo[drawbuffer]);
+                        pendingGFX++;
+                        drawbuffer ^= 1; /* switch the drawbuffer */
+                        RenderProcessing = 0;
+                    }
                 }
 
                 /* request latest controller information (ie poll) */
@@ -214,7 +227,20 @@ static void gameproc(void *argv)
                 
             case SIMPLE_CONTROLLER_MSG:
                 UpdateController();
-                UpdatePlayerControls();
+                switch (GameSequence)
+                {
+                    case(MENUSEQUENCE):
+                    {
+                        UpdateMenuControls();
+                        break;
+                    
+                    }
+                    case(LEVELSEQUENCE):
+                    {
+                        UpdatePlayerControls();
+                    }
+                }
+                
                 cntrlReadInProg = 0;
                 break;
                 
@@ -279,10 +305,19 @@ static void initGame(void)
 
     sched_cmdQ = osScGetCmdQ(&sc);
 
+    RawBufferPointer = (uint)&RawBuffer;
+
     /**** Call the initialization routines ****/
     initGFX(); 
     initCntrl();
     initAudio();
     initAllPlayers();
+    
+
+    LevelIndex = 0;
+    LoadHeader();
+    LoadLevelData();
+    BuildCollisionBuffer(0x122B8);
+    RenderEnable = 1;
 }
 

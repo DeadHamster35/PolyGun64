@@ -25,5 +25,6 @@ build/src/main/gfx.o: src/main/gfx.c /usr/include/n64/PR/ultralog.h \
  /usr/include/n64/PR/gu.h /usr/include/n64/PR/ramrom.h \
  /usr/include/n64/PR/sp.h /usr/include/n64/PR/ucode.h \
  /usr/include/n64/PR/ultraerror.h /usr/include/n64/PR/ultralog.h \
- include/gfx.h /usr/include/n64/PR/sched.h include/simple.h include/gfx.h \
- include/memory.h include/common.h include/player.h
+ include/gfx.h /usr/include/n64/PR/sched.h include/simple.h \
+ include/common.h include/gfx.h include/memory.h include/player.h \
+ include/levels.h

@@ -26,6 +26,8 @@
 #include <ultralog.h>
 #include <sched.h>
 #include "simple.h"
+#include "levels.h"
+#include "audio.h"
 
 #define X_SCALE_INCR 0.05f
 #define Y_SCALE_INCR 0.05f
@@ -91,6 +93,7 @@ void initCntrl(void)
  * with the result to only get the button downs, and ignore button ups.
  *
  *********************************************************************/
+short LoadLevelToggled;
 void UpdateController(void)
 {
     OSContPad *pad;
@@ -98,6 +101,18 @@ void UpdateController(void)
     u16 firstCntrl = 1;
     PRINTF("CONTROLLER");
     osContGetReadData(ControllerArray);
+
+    if (LoadLevelToggled)
+    {
+        while (RenderProcessing)
+        {
+        };
+
+        LoadHeader();
+        LoadLevelData();                
+        RenderEnable = 1;
+        LoadLevelToggled = 0;
+    }
 
     for (i = 0; i < MAXCONTROLLERS; i++)
     {
@@ -111,8 +126,6 @@ void UpdateController(void)
             newbutton = pad->button ^ lastButArray[i];
             newbutton &= pad->button;
             lastButArray[i] = pad->button;
-
-            
         }
     }
 }

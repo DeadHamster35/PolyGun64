@@ -4,6 +4,11 @@
 #include <ultra64.h>
 #define DEG1 0xB9
 
+
+
+#define MENUSEQUENCE 0
+#define LEVELSEQUENCE 1
+
 #define	SegmentOffset(a)	((unsigned int)(a) & 0x00ffffff)
 #define	SegmentNumber(a)	(((unsigned int)(a) << 4) >> 28)
 #define	SegmentAddress(num, off)	(((num) << 24) + (off))
@@ -43,10 +48,40 @@
 #define BTN_CRIGHT	    CONT_F
 #define BTN_CDOWN	    CONT_D
 
+
+#define	Align128(n)		(((uint)(n)+15)&0xfffffff0)
+#define	Align64(n)		(((uint)(n)+7)&0xfffffff8)
+#define	Align32(n)		(((uint)(n)+3)&0xfffffffc)
+#define	Align16(n)		(((uint)(n)+1)&0xfffffffe)
+
 typedef unsigned int uint;
+typedef unsigned short ushort;
 typedef float AffineMtx[4][4];
 typedef float Vector[3];
 typedef short SVector[3];
+
+#define MAXTRI 4096
+#define XAXISVECTOR 0
+#define YAXISVECTOR 1
+#define ZAXISVECTOR 2
+#define WTFAXISVECTOR 3
+
+
+typedef struct {
+
+    Vector  Center;
+    float   Radius;
+
+} Sphere;
+typedef struct {
+
+    float   BoundingMax[3];
+    float   BoundingMin[3];
+    short   NormalDirection, SurfaceType;
+    Vector  Vertex[3];
+    Vector  Normal;
+
+} CollisionTri;
 
 typedef struct {
     
@@ -61,7 +96,7 @@ typedef struct {
     Locate      Location;
     Vector      LookAt;
     Vector      UpVector;
-    short       FOVX, FOVY;
+    short       FOVY, Pad;
     short       Near,Far;    
 } PGCamera;
 
@@ -71,6 +106,18 @@ typedef struct{
     Locate      Location;    
     PGCamera    Camera;
 } Player;
+
+typedef struct {
+
+    uint    Segment4ROM;
+    uint    Segment5ROM;
+    uint    Segment6ROM;
+
+    uint    Segment4SizeCompressed;
+    uint    Segment5SizeCompressed;
+    uint    Segment6SizeCompressed;
+} LevelHeaderStruct;
+
 
 #endif
 

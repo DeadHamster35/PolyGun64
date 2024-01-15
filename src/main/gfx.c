@@ -31,6 +31,7 @@
 #include "simple.h"
 #include "memory.h"
 #include "player.h"
+#include "levels.h"
 
 /*
  * graphics globals
@@ -48,6 +49,9 @@ extern f32   logoScale_y;
 extern f32   logoScale_z;
 extern f32   logoVeloc;
 
+
+
+
 static u32          framecount;
 
 static char         *staticSegment = 0;
@@ -61,7 +65,9 @@ void DrawScene(Dynamic *dynamicp, int CameraIndex);
 
 void initGFX(void) 
 {    
-extern char _gfxdlistsSegmentEnd[];
+    extern char _gfxdlistsSegmentEnd[];
+
+    
     u32 len = (u32)(_staticSegmentRomEnd - _staticSegmentRomStart);
 
     staticSegment = _gfxdlistsSegmentBssStart;
@@ -74,6 +80,8 @@ extern char _gfxdlistsSegmentEnd[];
 
     /* The Vi manager was started by scheduler by this point in time */
     osViSetSpecialFeatures(OS_VI_DITHER_FILTER_ON);
+
+    
 }
 
 
@@ -104,8 +112,8 @@ void createGfxTask(GFXInfo *i)
         osViSetMode(&osViModeTable[OS_VI_NTSC_HAF1]);
         gSPDisplayList(glistp++, rdpstateinit_dl);
         
-        //osViSetYScale(0.7f);
-        //osViSetXScale(0.7f);
+        osViSetYScale(0.7f);
+        osViSetXScale(0.8f);
 	    firsttime = 0;
     }
 
@@ -137,7 +145,13 @@ void createGfxTask(GFXInfo *i)
 
 
     /**** Draw objects */
+
+
     DrawScene(dynamicp, 0);
+
+
+
+    
 
     
     /**** Put an end on the top-level display list  ****/
@@ -182,61 +196,60 @@ void createGfxTask(GFXInfo *i)
 }
 
 
-
-void DrawScene(Dynamic *dynamicp, int CameraIndex)
+void DrawLevelScene(Dynamic *dynamicp, int CameraIndex)
 {
-    u16		   perspNorm;
-    static float   logo_theta = 0;
-#ifndef DEBUGBARS
-    u32      timeLen;
-#endif
-    /*
-     * You must make the call to gSPPerspNormalize() in addition to 
-     * using the perspective projection matrix.
-     */
+    
     Player* LocalPlayer =       (Player*)&GamePlayers[CameraIndex];
     PGCamera* LocalCamera =     (PGCamera*)&GamePlayers[CameraIndex].Camera;
 
-    /*
-    guOrtho(&dynamicp->BGMap.Projection,
-	  -(float)240.0f, (float)240.0f,
-	  -(float)160.0f, (float)160.0f,
-	  1.0F, 40.0F, 1.0F);
+    
+
+    u16		   LevelNormal, SkyNormal, FPNormal;
+
+    guPerspective(&dynamicp->BGMap.Projection, &SkyNormal,
+		  LocalCamera->FOVY, 480.0f/320.0f, 1.0f, 500.0f, 1.0);          
+    guLookAt(&dynamicp->BGMap.Viewing, 
+	     0, 100.0f, 0,
+	     0, 0, 0,
+	     0, 0, 1);
+    
+    gSPPerspNormalize(glistp++, SkyNormal);
+
+    guTranslate(&dynamicp->BGMap.Translation, 0.0f, 0.0f, 0.0f);
+    guScale(&dynamicp->BGMap.Scale, 1.0f, 1.0f, 1.0f);    
+    guRotate(&dynamicp->BGMap.Rotation, 0.0f, 0.0F, 0.0F, 1.0);   
+    
 
 
     gSPMatrix(glistp++, &dynamicp->BGMap.Projection, 
-	       G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
+	       G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);           
     gSPMatrix(glistp++, &dynamicp->BGMap.Viewing, 
 	       G_MTX_PROJECTION | G_MTX_MUL | G_MTX_NOPUSH);
+    gSPMatrix(glistp++, &dynamicp->BGMap.Translation, 
+	      G_MTX_MODELVIEW | G_MTX_LOAD | G_MTX_NOPUSH);
+    gSPMatrix(glistp++, &dynamicp->BGMap.Scale, 
+	      G_MTX_MODELVIEW | G_MTX_MUL | G_MTX_NOPUSH);
+    gSPMatrix(glistp++, &dynamicp->BGMap.Rotation, 
+	      G_MTX_MODELVIEW | G_MTX_MUL | G_MTX_NOPUSH);
 
            
     gSPDisplayList(glistp++, bg_dl);
-    */
+    
 
-    guPerspective(&dynamicp->LevelMap.Projection, &perspNorm,
-		  LocalCamera->FOVX, 480.0f/320.0f, LocalCamera->Near, LocalCamera->Far, 1.0);
-    gSPPerspNormalize(glistp++, perspNorm);
+    
+
+    guPerspective(&dynamicp->LevelMap.Projection, &LevelNormal,
+		  LocalCamera->FOVY, 480.0f/320.0f, LocalCamera->Near, LocalCamera->Far, 1.0);
+    gSPPerspNormalize(glistp++, LevelNormal);
 
     guLookAt(&dynamicp->LevelMap.Viewing, 
         LocalCamera->Location.Position[0], LocalCamera->Location.Position[1], LocalCamera->Location.Position[2],
         LocalCamera->LookAt[0], LocalCamera->LookAt[1], LocalCamera->LookAt[2],
         LocalCamera->UpVector[0], LocalCamera->UpVector[1], LocalCamera->UpVector[2]);
     
-    /*
-    guPerspective(&dynamicp->LevelMap.Projection, &perspNorm,
-		  90, 90, 2.0f, 15000.0f, 1.0f);
-    gSPPerspNormalize(glistp++, perspNorm);
-
-    guLookAt(&dynamicp->LevelMap.Viewing, 
-        0.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 1.0f
-    );
-    */
-    
     guTranslate(&dynamicp->LevelMap.Translation, 0.0f, 0.0f, 0.0f);
     guScale(&dynamicp->LevelMap.Scale, 1.0f, 1.0f, 1.0f);    
-    guRotate(&dynamicp->LevelMap.Rotation, logo_theta, 0.0F, 1.0F, 0.0);
+    guRotate(&dynamicp->LevelMap.Rotation, 0.0f, 0.0F, 1.0F, 0.0);
 
     /* Setup model matrix */
     gSPMatrix(glistp++, &dynamicp->LevelMap.Projection, 
@@ -250,11 +263,81 @@ void DrawScene(Dynamic *dynamicp, int CameraIndex)
     gSPMatrix(glistp++, &dynamicp->LevelMap.Rotation, 
 	      G_MTX_MODELVIEW | G_MTX_MUL | G_MTX_NOPUSH);
     
-    /* Draw the logo */
-    gSPDisplayList(glistp++, logo_dl);
+    /* Draw the level */
+    gSPDisplayList(glistp++, TableAddress[LevelIndex]);
 
-    /* calculate theta for next frame */
-    logo_theta += logoVeloc;
+}
+
+
+
+void DrawMenu(Dynamic *dynamicp, int CameraIndex)
+{
+    
+    Player* LocalPlayer =       (Player*)&GamePlayers[CameraIndex];
+    PGCamera* LocalCamera =     (PGCamera*)&GamePlayers[CameraIndex].Camera;
+
+    
+
+    u16		   LevelNormal, SkyNormal, FPNormal;
+
+    guPerspective(&dynamicp->BGMap.Projection, &SkyNormal,
+		  LocalCamera->FOVY, 480.0f/320.0f, 1.0f, 500.0f, 1.0);          
+    guLookAt(&dynamicp->BGMap.Viewing, 
+	     0, 100.0f, 0,
+	     0, 0, 0,
+	     0, 0, 1);
+    
+    gSPPerspNormalize(glistp++, SkyNormal);
+
+    guTranslate(&dynamicp->BGMap.Translation, 0.0f, 0.0f, 0.0f);
+    guScale(&dynamicp->BGMap.Scale, 1.0f, 1.0f, 1.0f);    
+    guRotate(&dynamicp->BGMap.Rotation, 0.0f, 0.0F, 0.0F, 1.0);   
+    
+
+
+    gSPMatrix(glistp++, &dynamicp->BGMap.Projection, 
+	       G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);           
+    gSPMatrix(glistp++, &dynamicp->BGMap.Viewing, 
+	       G_MTX_PROJECTION | G_MTX_MUL | G_MTX_NOPUSH);
+    gSPMatrix(glistp++, &dynamicp->BGMap.Translation, 
+	      G_MTX_MODELVIEW | G_MTX_LOAD | G_MTX_NOPUSH);
+    gSPMatrix(glistp++, &dynamicp->BGMap.Scale, 
+	      G_MTX_MODELVIEW | G_MTX_MUL | G_MTX_NOPUSH);
+    gSPMatrix(glistp++, &dynamicp->BGMap.Rotation, 
+	      G_MTX_MODELVIEW | G_MTX_MUL | G_MTX_NOPUSH);
+
+           
+    gSPDisplayList(glistp++, menubg_dl);
+    
+
+
+}
+void DrawScene(Dynamic *dynamicp, int CameraIndex)
+{
+
+
+    static float   logo_theta = 0;
+#ifndef DEBUGBARS
+    u32      timeLen;
+#endif
+
+    switch(GameSequence)
+    {
+        case(MENUSEQUENCE):
+        {
+            DrawMenu(dynamicp, CameraIndex);
+            break;
+        }
+        case(LEVELSEQUENCE):
+        {
+            DrawLevelScene(dynamicp, CameraIndex);
+            break;
+        }
+        
+    }
+    
+
+
 
 #ifndef DEBUGBARS   /* draw the performance bar */
 #if 0
