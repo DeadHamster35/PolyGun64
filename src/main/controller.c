@@ -99,7 +99,7 @@ void UpdateController(void)
     OSContPad *pad;
     u16 i, newbutton;
     u16 firstCntrl = 1;
-    PRINTF("CONTROLLER");
+    
     osContGetReadData(ControllerArray);
 
     if (LoadLevelToggled)

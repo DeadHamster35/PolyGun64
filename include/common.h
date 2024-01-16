@@ -67,6 +67,10 @@ typedef short SVector[3];
 #define WTFAXISVECTOR 3
 
 
+
+#define MAXSPEED 3.5f
+#define MAXLOOK 25
+
 typedef struct {
 
     Vector  Center;
@@ -78,16 +82,21 @@ typedef struct {
     float   BoundingMax[3];
     float   BoundingMin[3];
     short   NormalDirection, SurfaceType;
+    float   VectorDistance;
     Vector  Vertex[3];
     Vector  Normal;
 
 } CollisionTri;
 
+
+
 typedef struct {
     
     Vector      Position;
+    Vector      LastPosition;
     Vector      VelocityFront;
     Vector      VelocitySide;
+    Vector      VelocityTotal;
     SVector     Angle;
     short       Radius;
 } Locate;
@@ -96,7 +105,7 @@ typedef struct {
     Locate      Location;
     Vector      LookAt;
     Vector      UpVector;
-    short       FOVY, Pad;
+    short       FOVY, LastHit;
     short       Near,Far;    
 } PGCamera;
 

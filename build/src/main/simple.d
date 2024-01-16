@@ -27,4 +27,4 @@ build/src/main/simple.o: src/main/simple.c /usr/include/n64/ultra64.h \
  /usr/include/n64/PR/sched.h include/simple.h include/common.h \
  include/gfx.h src/main/audio.h /usr/include/n64/PR/libaudio.h \
  include/gfx.h include/memory.h include/player.h \
- include/compressionbuffer.h include/levels.h
+ include/compressionbuffer.h include/levels.h include/collision.h

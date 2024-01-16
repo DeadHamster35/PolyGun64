@@ -117,11 +117,6 @@ void Save2Triangle(F3DCode* OpCode)
     Index[0] = (OpCode->CodeA & 0xFF) / 2;
     Index[1] = ((OpCode->CodeA >> 8) & 0xFF)  / 2; 
     Index[2] = ((OpCode->CodeA >> 16) & 0xFF)  / 2;
-
-    PRINTF("Triangle # %d \n", (int)CollisionCount);
-    PRINTF("Triangle Index0 X %d \n", (int)Index[0]);
-    PRINTF("Triangle Index1 Y %d \n", (int)Index[1]);
-    PRINTF("Triangle Index2 Z %d \n", (int)Index[2]);
     
 
     for (int ThisVector = 0; ThisVector < 3; ThisVector++)
@@ -132,14 +127,12 @@ void Save2Triangle(F3DCode* OpCode)
 
     for (int ThisVert = 0; ThisVert < 3; ThisVert++)
     {
-        PRINTF("Triangle Vertex # %d \n", (int)ThisVert);
         for (int ThisVector = 0; ThisVector < 3; ThisVector++)
         {
             CollisionBuffer[CollisionCount].Vertex[ThisVert][ThisVector] = VertexCache[Index[ThisVert]][ThisVector];
             
 
             
-            PRINTF("Triangle Position %d \n", (int)CollisionBuffer[CollisionCount].Vertex[ThisVert][ThisVector]);
 
             if (VertexCache[Index[ThisVert]][ThisVector] < CollisionBuffer[CollisionCount].BoundingMin[ThisVector])
             {
@@ -170,11 +163,6 @@ void Save2Triangle(F3DCode* OpCode)
 
     
 
-    PRINTF("Triangle # %d \n", (int)CollisionCount);
-    PRINTF("Triangle Index0 X %d \n", (int)Index[0]);
-    PRINTF("Triangle Index1 Y %d \n", (int)Index[1]);
-    PRINTF("Triangle Index2 Z %d \n", (int)Index[2]);
-
     for (int ThisVector = 0; ThisVector < 3; ThisVector++)
     {
         CollisionBuffer[CollisionCount].BoundingMax[ThisVector] = -99999999999.0f;
@@ -183,12 +171,10 @@ void Save2Triangle(F3DCode* OpCode)
 
     for (int ThisVert = 0; ThisVert < 3; ThisVert++)
     {
-        PRINTF("Triangle Vertex # %d \n", (int)ThisVert);
         for (int ThisVector = 0; ThisVector < 3; ThisVector++)
         {
             CollisionBuffer[CollisionCount].Vertex[ThisVert][ThisVector] = VertexCache[Index[ThisVert]][ThisVector];
             
-            PRINTF("Triangle Position %d \n", (int)CollisionBuffer[CollisionCount].Vertex[ThisVert][ThisVector]);
 
             if (VertexCache[Index[ThisVert]][ThisVector] < CollisionBuffer[CollisionCount].BoundingMin[ThisVector])
             {
@@ -301,6 +287,13 @@ void SaveNormal()
         LocalTriangle->Normal[1] = (float)C[1]/LengthB;
         LocalTriangle->Normal[2] = (float)C[2]/LengthB;
     }
+
+    LocalTriangle->VectorDistance = -1 * 
+    (
+        LocalTriangle->Normal[0] * LocalTriangle->Vertex[0][0] + 
+        LocalTriangle->Normal[1] * LocalTriangle->Vertex[0][1] + 
+        LocalTriangle->Normal[2] * LocalTriangle->Vertex[0][2]
+    ); 
 
     
     
@@ -431,7 +424,7 @@ int CheckXY(Sphere Player, ushort ThisTri)
 
     short HitResult;
     Vector Product;
-
+    
 
     Product[0] = 
     (
@@ -582,17 +575,19 @@ void CollisionCheck(int Index)
     CamSphere.Center[0] = GamePlayers[Index].Camera.Location.Position[0];
     CamSphere.Center[1] = GamePlayers[Index].Camera.Location.Position[1];
     CamSphere.Center[2] = GamePlayers[Index].Camera.Location.Position[2];
-    CamSphere.Radius = 3.0f;
+    CamSphere.Radius = 5.0f;
 
+
+    
     for (int ThisTri = 0; ThisTri < CollisionCount; ThisTri++)
     {
         for (int ThisVector = 0; ThisVector < 3; ThisVector++)
         {
-            if (CamSphere.Center[ThisVector] > CollisionBuffer[ThisTri].BoundingMax[ThisVector])
+            if (CamSphere.Center[ThisVector] - CamSphere.Radius  > CollisionBuffer[ThisTri].BoundingMax[ThisVector])
             {
                 goto skiptriangle;
             }
-            if (CamSphere.Center[ThisVector] < CollisionBuffer[ThisTri].BoundingMin[ThisVector])
+            if (CamSphere.Center[ThisVector] + CamSphere.Radius < CollisionBuffer[ThisTri].BoundingMin[ThisVector])
             {
                 goto skiptriangle;
             }
@@ -603,12 +598,12 @@ void CollisionCheck(int Index)
         {
             case XAXISVECTOR:
             {
-                //HitResult = CheckYZ(CamSphere, ThisTri);
+                HitResult = CheckYZ(CamSphere, ThisTri);
                 break;
             }
             case YAXISVECTOR:
             {
-                //HitResult = CheckXZ(CamSphere, ThisTri);
+                HitResult = CheckXZ(CamSphere, ThisTri);
                 break;
             }
             case ZAXISVECTOR:
@@ -619,18 +614,28 @@ void CollisionCheck(int Index)
         }
         if (HitResult > 0)
         {
-            GamePlayers[Index].Location.Position[0] -= CollisionBuffer[ThisTri].Normal[0] * CamSphere.Radius;
-            GamePlayers[Index].Location.Position[1] -= CollisionBuffer[ThisTri].Normal[1] * CamSphere.Radius;
-            GamePlayers[Index].Location.Position[2] -= CollisionBuffer[ThisTri].Normal[2] * CamSphere.Radius;
-            PRINTF("Collision %d \n",ThisTri);
-            PRINTF("Player X %d \n", (int)GamePlayers[0].Location.Position[0]);
-            PRINTF("Player Y %d \n", (int)GamePlayers[0].Location.Position[1]);
-            PRINTF("Player Z %d \n", (int)GamePlayers[0].Location.Position[2]);
-            for (int ThisVert = 0; ThisVert < 3; ThisVert++)
+            
+
+            float PushDistance = 
+            (
+                CollisionBuffer[ThisTri].Normal[0] * GamePlayers[Index].Camera.Location.Position[0] +
+                CollisionBuffer[ThisTri].Normal[1] * GamePlayers[Index].Camera.Location.Position[1] +
+                CollisionBuffer[ThisTri].Normal[2] * GamePlayers[Index].Camera.Location.Position[2] +
+                CollisionBuffer[ThisTri].VectorDistance - CamSphere.Radius
+            );
+            
+            if (PushDistance < 0)
             {
-                PRINTF("Triangle V0 X %d \n", (int)CollisionBuffer[ThisTri].Vertex[ThisVert][0]);
-                PRINTF("Triangle V0 Y %d \n", (int)CollisionBuffer[ThisTri].Vertex[ThisVert][1]);
-                PRINTF("Triangle V0 Z %d \n", (int)CollisionBuffer[ThisTri].Vertex[ThisVert][2]);
+                GamePlayers[Index].Camera.LastHit = CollisionBuffer[ThisTri].NormalDirection;
+                GamePlayers[Index].Camera.Location.Position[0] += CollisionBuffer[ThisTri].Normal[0] * PushDistance;
+                GamePlayers[Index].Camera.Location.Position[1] += CollisionBuffer[ThisTri].Normal[1] * PushDistance;
+                GamePlayers[Index].Camera.Location.Position[2] += CollisionBuffer[ThisTri].Normal[2] * PushDistance;
+
+                if (CollisionBuffer[ThisTri].NormalDirection == ZAXISVECTOR)
+                {
+                    GamePlayers[Index].Camera.Location.VelocityFront[2] = 0.0f;
+                    GamePlayers[Index].Location.VelocityFront[2] = 0.0f;
+                }
             }
         }
 

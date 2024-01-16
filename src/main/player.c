@@ -5,6 +5,7 @@
 #include "common.h"
 #include "simple.h"
 #include "math.h"
+#include "collision.h"
 
 Player GamePlayers[4];
 
@@ -30,10 +31,7 @@ void initPlayer(int ThisPlayer)
         GamePlayers[ThisPlayer].Camera.UpVector[ThisVector] = UpDirection[ThisVector];
         
     }
-    
-    GamePlayers[ThisPlayer].Camera.Location.Position[1] = -300.0f;
-    GamePlayers[ThisPlayer].Location.Position[1] = -300.0f;
-
+    GamePlayers[ThisPlayer].Camera.LookAt[1] = 100.0f;
     GamePlayers[ThisPlayer].Location.Radius = 4.0f;        
     GamePlayers[ThisPlayer].Camera.Location.Radius = 4.0f;
 
@@ -54,12 +52,9 @@ void initAllPlayers()
 
 AffineMtx CameraMatrix[4];
 float Nerf;
-
-#define MAXSPEED 3.5f
-#define MAXLOOK 25
 void UpdatePlayerControls()
 {
-    for (int ThisPlayer = 0; ThisPlayer < 4; ThisPlayer++)
+    for (int ThisPlayer = 0; ThisPlayer < 1; ThisPlayer++)
     {
         OSContPad* LocalPad = (OSContPad*)&ControllerArray[ThisPlayer];
         PGCamera* LocalCamera = (PGCamera*)&GamePlayers[ThisPlayer].Camera;
@@ -102,6 +97,17 @@ void UpdatePlayerControls()
             }
         }
 
+
+        if (LocalPad->button & BTN_R)
+        {
+            LocalCamera->Location.Position[2] += 5.0f;
+            LocalCamera->LastHit = WTFAXISVECTOR;
+        }
+        if (LocalPad->button & BTN_Z)
+        {
+            LocalCamera->Location.Position[2] -= 5.0f;
+        }
+
         LocalCamera->LookAt[0] = 0;
         LocalCamera->LookAt[1] = 100;
         LocalCamera->LookAt[2] = 0;
@@ -122,33 +128,45 @@ void UpdatePlayerControls()
         LocalCamera->Location.VelocitySide[0] += CameraMatrix[ThisPlayer][0][0] * XSpeed;
         LocalCamera->Location.VelocitySide[1] += CameraMatrix[ThisPlayer][1][0] * XSpeed;
 
-        float VelocityA = (
+        LocalCamera->Location.VelocityTotal[0] = sqrtf(
             LocalCamera->Location.VelocityFront[0] * LocalCamera->Location.VelocityFront[0] + 
-            LocalCamera->Location.VelocityFront[1] * LocalCamera->Location.VelocityFront[1]
+            LocalCamera->Location.VelocitySide[0] * LocalCamera->Location.VelocitySide[0]
         );
 
-        float VelocityB = (
-            LocalCamera->Location.VelocitySide[0] * LocalCamera->Location.VelocitySide[0] + 
+        LocalCamera->Location.VelocityTotal[1] = sqrtf(            
+            LocalCamera->Location.VelocityFront[1] * LocalCamera->Location.VelocityFront[1] + 
             LocalCamera->Location.VelocitySide[1] * LocalCamera->Location.VelocitySide[1]
         );
+
+        float TotalSpeed = sqrtf(
         
-        if (VelocityA > (MAXSPEED * MAXSPEED))
+            LocalCamera->Location.VelocityTotal[0] * LocalCamera->Location.VelocityTotal[0] +
+            LocalCamera->Location.VelocityTotal[1] * LocalCamera->Location.VelocityTotal[1]
+        );
+        
+        if (TotalSpeed > (MAXSPEED))
         {
-            Nerf = ((MAXSPEED) / (sqrtf(VelocityA)));
+            Nerf = ((MAXSPEED) / (TotalSpeed));
+        
             LocalCamera->Location.VelocityFront[0] *= Nerf;
             LocalCamera->Location.VelocityFront[1] *= Nerf;
-        }
-
-        if (VelocityB > (MAXSPEED * MAXSPEED))
-        {
-            Nerf = ((MAXSPEED) / (sqrtf(VelocityB)));
+            
             LocalCamera->Location.VelocitySide[0] *= Nerf;
             LocalCamera->Location.VelocitySide[1] *= Nerf;
         }
 
+        LocalCamera->Location.VelocityTotal[2] = sqrtf(            
+            LocalCamera->Location.VelocityFront[2] * LocalCamera->Location.VelocityFront[2]
+        );
+
+
 
         for (int ThisVector = 0; ThisVector < 3; ThisVector++)
         {
+            
+            LocalPlayer->Location.LastPosition[ThisVector] = LocalPlayer->Location.Position[ThisVector];
+            LocalPlayer->Camera.Location.LastPosition[ThisVector] = LocalPlayer->Camera.Location.Position[ThisVector];
+
             LocalCamera->Location.Position[ThisVector] -= LocalCamera->Location.VelocityFront[ThisVector];
             LocalCamera->Location.Position[ThisVector] -= LocalCamera->Location.VelocitySide[ThisVector];
 
@@ -161,6 +179,7 @@ void UpdatePlayerControls()
 
             LocalCamera->Location.VelocityFront[ThisVector] *= 0.9f;
             LocalCamera->Location.VelocitySide[ThisVector] *= 0.9f;
+            
         }
         
         if (!( (LocalPad->button & BTN_CUP) || (LocalPad->button & BTN_CDOWN) ))
@@ -168,7 +187,21 @@ void UpdatePlayerControls()
             LocalCamera->Location.Angle[0] *= 0.95f;
         }
 
+        CollisionCheck(ThisPlayer);
 
+        if (LocalCamera->LastHit != ZAXISVECTOR)
+        {
+            if (LocalCamera->Location.VelocityFront[2] < 1.5f)
+            {
+                LocalCamera->Location.VelocityFront[2] += 0.125f;
+                LocalPlayer->Location.VelocityFront[2] += 0.125f;
+            }
+            else
+            {
+                LocalCamera->Location.VelocityFront[2] = 1.5f;
+                LocalPlayer->Location.VelocityFront[2] = 1.5f;
+            }
+        }
 
     }
 }

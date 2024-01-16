@@ -57,6 +57,7 @@
 #include "player.h"
 #include "compressionbuffer.h"
 #include "levels.h"
+#include "collision.h"
 
 
 /**** threads used by this file ****/
@@ -215,6 +216,16 @@ static void gameproc(void *argv)
                     cntrlReadInProg = 1;
                     osContStartReadData(&gfxFrameMsgQ);
                 }
+
+                switch (GameSequence)
+                {
+                    case(LEVELSEQUENCE):
+                    {
+                        UpdatePlayerControls();
+                        break;
+                    }
+                }
+
                 break;
 
             case (OS_SC_DONE_MSG):
@@ -234,10 +245,6 @@ static void gameproc(void *argv)
                         UpdateMenuControls();
                         break;
                     
-                    }
-                    case(LEVELSEQUENCE):
-                    {
-                        UpdatePlayerControls();
                     }
                 }
                 
@@ -317,7 +324,9 @@ static void initGame(void)
     LevelIndex = 0;
     LoadHeader();
     LoadLevelData();
-    BuildCollisionBuffer(0x122B8);
+    SetSegment(7,(uint)&CollisionBuffer);
+    BuildCollisionBuffer(0x060122B8);
+    SetSegment(8,(uint)&CollisionBuffer);
     RenderEnable = 1;
 }
 

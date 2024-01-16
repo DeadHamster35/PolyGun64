@@ -26,4 +26,4 @@ build/src/main/player.o: src/main/player.c /usr/include/n64/ultra64.h \
  /usr/include/n64/PR/ultraerror.h /usr/include/n64/PR/ultralog.h \
  include/gfx.h /usr/include/n64/PR/sched.h include/controller.h \
  include/common.h include/common.h include/simple.h include/gfx.h \
- include/math.h
+ include/math.h include/collision.h
